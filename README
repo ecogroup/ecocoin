@@ -1,5 +1,6 @@
 EcoCoin Official Development Tree.
 ---------------------------------------
+```HTML
 <img src="http://www.ecocoin.info/images/coin.png" width="300" align="center" />
 <h4>Maintained by fellow <b>ecologists</b>.<br>
 <small>V2.4</small></h4>
@@ -8,7 +9,7 @@ EcoCoin - a hybrid scrypt PoW + PoS based cryptocurrency that uses the scrypt + 
 
 <i><b>Visit</b> @ <a href="http://www.ecocoin.info/" target="_blank">http://www.ecocoin.info/</a></i><br>
 <b>Contact</b> @ bitcointalk.org user EcoCoin <-> team@ecocoin.info
-
+```
 Development process
 ===========================
 
