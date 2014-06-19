@@ -22,32 +22,43 @@ using namespace std;
 //    Returns: Estimated EcoCoin network hash rate (uint64_t)
 //
 
-uint64_t GetNetworkHashPS( int lookup )
-{
-    if( !pindexBest )
+Value GetNetworkHashPS(int lookup, int height) {
+
+    if (!pindexBest)
         return 0;
 
-    if( lookup < 0 )
-        lookup = 0;
+    CBlockIndex *pb = pindexBest;
+
+    if (height => 0 && height < nBestHeight)
+    	pb = FindBlockByHeight(height);
+
+    if (pb == NULL || !pb->nHeight)
+        return 0;
+
+    // If lookup is -1, then use blocks since last difficulty change.
+    if (lookup < 0)
+        lookup = pb->nHeight % 2016 + 1;
 
     // If lookup is larger than chain, then set it to chain length.
-    if( lookup > pindexBest->nHeight )
-        lookup = pindexBest->nHeight;
+    if (lookup > pb->nHeight)
+        lookup = pb->nHeight;
 
-    CBlockIndex *pindexPrev = pindexBest;
-
-    for( int i = 0; i < lookup; ++i){
+    CBlockIndex *pindexPrev = pb;
+    for (int i = 0; i < lookup; i++) {
         while(pindexPrev->pprev && pindexPrev->pprev->IsProofOfStake())
             pindexPrev = pindexPrev->pprev;
         pindexPrev = pindexPrev->pprev;
     }
 
-    double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
-    double timePerBlock = timeDiff / lookup;
+    // In case there's a situation where minTime == maxTime, we don't want a divide by zero exception.
+    if (pb->GetBlockTime() == pindexPrev->GetBlockTime())
+        return 0;
+
+    double workDiff = pb->GetBlockTime() - pindexPrev->GetBlockTime();
+    double timePerBlock = workDiff / lookup;
 
     return (uint64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
 }
-
 
 
 Value getgenerate(const Array& params, bool fHelp)
@@ -140,12 +151,14 @@ Value getmininginfo(const Array& params, bool fHelp)
 // WM - Implementation of getnetworkhashps for EcoCoin
 Value getnetworkhashps(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 0)
-        throw runtime_error(
-            "getnetworkhashps\n"
-            "Returns an estimate of the EcoCoin network hash rate.");
+     if (fHelp || params.size() > 2)
+         throw runtime_error(
+         "getnetworkhashps [blocks] [height]\n"
+         "Returns the estimated network hashes per second based on the last 10 blocks.\n"
+         "Pass in [blocks] to override # of blocks, -1 specifies since last difficulty change.\n"
+         "Pass in [height] to estimate the network speed at the time when a certain block was found.");
 
-    return GetNetworkHashPS(params.size() > 0 ? params[0].get_int() : 10);
+     return GetNetworkHashPS(params.size() > 0 ? params[0].get_int() : 10, params.size() > 1 ? params[1].get_int() : -1);
 }
 
 
