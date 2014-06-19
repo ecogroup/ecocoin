@@ -29,7 +29,7 @@ Value GetNetworkHashPS(int lookup, int height) {
 
     CBlockIndex *pb = pindexBest;
 
-    if (height => 0 && height < nBestHeight)
+    if (height >= 0 && height < nBestHeight)
     	pb = FindBlockByHeight(height);
 
     if (pb == NULL || !pb->nHeight)
